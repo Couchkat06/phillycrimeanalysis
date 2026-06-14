@@ -31,3 +31,38 @@ df = pd.concat(frames, ignore_index = True) #stacks into one df
 print(df.shape)
 
 #parsing dates
+
+#converting column to datetime type
+df["dispatch_date_time"] = pd.to_datetime(df["dispatch_date_time"])
+
+
+df["year"] = df["dispatch_date_time"].dt.year
+df["month"] = df["dispatch_date_time"].dt.month
+df["hour"] = df["dispatch_date_time"].dt.hour
+df["dayofweek"] = df["dispatch_date_time"].dt.dayofweek
+
+print(df.isna().sum()) #count of missing values per column
+
+df.dropna(subset = ["dispatch_date_time"]) #drops rows without datetime
+df.dropna(subset = ["text_general_code"]) #drops rows without crime type
+
+#simplifying crime categories
+
+print(df["text_general_code"].value_counts())
+
+def simplify_crime_type(data): 
+    data = str(data).lower()
+    if "theft" in data or "burglary" in data or "robbery" in data or "stolen" in data: 
+        return "Theft/Robbery"
+    elif "assault" in data: 
+        return "Assault"
+    elif "homicide" in data:
+        return "Homicide"
+    elif "rape" in data or "sex" in data or "prostitution" in data:
+        return "Sex Offense"
+    else:
+        return "Other" 
+    
+df["crime_category"] = df["text_general_code"].apply(simplify_crime_type)
+print(df["crime_category"].value_counts())
+
