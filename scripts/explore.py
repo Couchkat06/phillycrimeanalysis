@@ -1,8 +1,10 @@
+import sys
+print(sys.executable)
 import pandas as pd
 import numpy as np
-import matplotlib as plt
+import matplotlib.pyplot as plt
 import seaborn as sns
-
+import glob 
 from pathlib import Path
 
 # directs to scripts folder
@@ -18,6 +20,23 @@ title_style = dict(fontsize = 25,
                    fontweight = "bold",
                    color = "#2d4cfc")
 
+label_style = dict(fontsize = 20,
+                   family = "Arial",
+                   fontweight = "bold",
+                   color = "#2dbefc")
+
+TICK_COLOR = "#2dbefc"
+
+#line styling 
+line_style = dict(marker = "*", 
+                  markersize = 12, 
+                  linestyle = "dotted",
+                  linewidth = 2)
+
+#bar styling
+BAR_FILL = "#1cd3fc"
+BAR_EDGE = "#1c5bfc"
+
 
 # %%
 df = pd.read_csv(DATA_DIR / "crime_2024.csv")
@@ -29,8 +48,7 @@ print(df.columns.tolist()) #shows all column names
 #prints counts of all types of crime under text_general_code column
 print(df["text_general_code"].value_counts())
 
-import glob 
-
+# %%
 files = list(DATA_DIR.glob("crime_*.csv"))
 frames = [] #empty frames list
 
@@ -40,6 +58,7 @@ df = pd.concat(frames, ignore_index = True) #stacks into one df
 
 print(df.shape)
 
+# %%
 #parsing dates
 
 #converting column to datetime type
@@ -51,6 +70,7 @@ df["month"] = df["dispatch_date_time"].dt.month
 df["hour"] = df["dispatch_date_time"].dt.hour
 df["dayofweek"] = df["dispatch_date_time"].dt.dayofweek
 
+# %%
 print(df.isna().sum()) #count of missing values per column
 
 df.dropna(subset = ["dispatch_date_time"]) #drops rows without datetime
@@ -81,7 +101,7 @@ print(df["crime_category"].value_counts())
 yearly = df.groupby("year").size()
 print(yearly)
 
-yearly_by_type = df.groupby("year", "crime_category").size().unstack()
+yearly_by_type = df.groupby(["year", "crime_category"]).size().unstack()
 print(yearly_by_type)
 
 #plotting
@@ -93,11 +113,15 @@ for category in yearly_by_type.columns:
             yearly_by_type[category],
             label = category,
             **line_style)
-ax.set_title("Philadelphia Crime by Category, 2018-2025")
-ax.set_xlabel("Year")
-ax.set_ylabel("Number of Incidents")
+ax.set_title("Philadelphia Crime by Category, 2018-2025", **title_style)
+ax.set_xlabel("Year", **label_style)
+ax.set_ylabel("Number of Incidents", **label_style)
+ax.tick_params(axis = "both", colors = TICK_COLOR)
+ax.set_xticks(yearly_by_type.index)
+ax.legend()
+
 plt.tight_layout()
-plt.savefig("../output/yearly_trends.png", dip = 150)
+plt.savefig(OUTPUT_DIR / "yearly_trends.png", dpi = 150)
 plt.show()
 
 
@@ -107,12 +131,16 @@ pivot = df.pivot_table(index = "dayofweek",
                        aggfunc = "count")
 
 fig, ax = plt.subplots(figsize = (14, 6))
-sns.heatmap(pivot, cmap = "Y10rRd", ax = ax)
+sns.heatmap(pivot, cmap = "Yl0rRd", ax = ax)
 ax.set_yticklabels(["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"], rotation = 0)
-ax.set_title("Crime Frequency by Hour and Day of the Week")
-ax.set_xlabel("Hour of Day")
+ax.set_title("Crime Frequency by Hour and Day of the Week", **title_style)
+ax.set_xlabel("Hour of Day", **label_style)
+ax.set_ylabel("Day of Week", **label_style)
+ax.tick_params(axis = "both", colors = TICK_COLOR)
+
 plt.tight_layout()
 plt.savefig("../output/heatmap.png", dpi = 150)
+plt.show()
 
 by_district = df.groupby("dc_dist").size().sort_values(ascending = False)
 
