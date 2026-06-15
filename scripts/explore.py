@@ -1,5 +1,7 @@
 import pandas as pd
 import numpy as np
+import matplotlib as plt
+import seaborn as sns
 
 from pathlib import Path
 
@@ -8,6 +10,14 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 
 # directs to main folder and reroutes to data folder, creating a path
 DATA_DIR = SCRIPT_DIR.parent / "data"
+OUTPUT_DIR = SCRIPT_DIR.parent / "output"
+
+#text styling
+title_style = dict(fontsize = 25,
+                   family = "Arial",
+                   fontweight = "bold",
+                   color = "#2d4cfc")
+
 
 # %%
 df = pd.read_csv(DATA_DIR / "crime_2024.csv")
@@ -66,3 +76,47 @@ def simplify_crime_type(data):
 df["crime_category"] = df["text_general_code"].apply(simplify_crime_type)
 print(df["crime_category"].value_counts())
 
+#analysis & visualization
+
+yearly = df.groupby("year").size()
+print(yearly)
+
+yearly_by_type = df.groupby("year", "crime_category").size().unstack()
+print(yearly_by_type)
+
+#plotting
+
+fig, ax = plt.subplots(figsize = (10,6))
+
+for category in yearly_by_type.columns:
+    ax.plot(yearly_by_type.index, 
+            yearly_by_type[category],
+            label = category,
+            **line_style)
+ax.set_title("Philadelphia Crime by Category, 2018-2025")
+ax.set_xlabel("Year")
+ax.set_ylabel("Number of Incidents")
+plt.tight_layout()
+plt.savefig("../output/yearly_trends.png", dip = 150)
+plt.show()
+
+
+pivot = df.pivot_table(index = "dayofweek",
+                       columns = "hour",
+                       values = "crime_category",
+                       aggfunc = "count")
+
+fig, ax = plt.subplots(figsize = (14, 6))
+sns.heatmap(pivot, cmap = "Y10rRd", ax = ax)
+ax.set_yticklabels(["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"], rotation = 0)
+ax.set_title("Crime Frequency by Hour and Day of the Week")
+ax.set_xlabel("Hour of Day")
+plt.tight_layout()
+plt.savefig("../output/heatmap.png", dpi = 150)
+
+by_district = df.groupby("dc_dist").size().sort_values(ascending = False)
+
+fig, ax = plt.subplots(figsize = (12, 6))
+by_district.plot(kind = "bar", ax = ax)
+ax.set_title("Total Incidents by Police District, 2018-2025")
+ax.set_xlabel("Districts")
