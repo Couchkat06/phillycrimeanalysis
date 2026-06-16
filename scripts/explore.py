@@ -76,6 +76,7 @@ print(df.isna().sum()) #count of missing values per column
 df.dropna(subset = ["dispatch_date_time"]) #drops rows without datetime
 df.dropna(subset = ["text_general_code"]) #drops rows without crime type
 
+# %%
 #simplifying crime categories
 
 print(df["text_general_code"].value_counts())
@@ -96,6 +97,7 @@ def simplify_crime_type(data):
 df["crime_category"] = df["text_general_code"].apply(simplify_crime_type)
 print(df["crime_category"].value_counts())
 
+# %% 
 #analysis & visualization
 
 yearly = df.groupby("year").size()
@@ -105,6 +107,9 @@ yearly_by_type = df.groupby(["year", "crime_category"]).size().unstack()
 print(yearly_by_type)
 
 #plotting
+
+# %% 
+#yearly trends line chart
 
 fig, ax = plt.subplots(figsize = (10,6))
 
@@ -124,6 +129,8 @@ plt.tight_layout()
 plt.savefig(OUTPUT_DIR / "yearly_trends.png", dpi = 150)
 plt.show()
 
+# %%
+#Hour x Day crime heatmap
 
 pivot = df.pivot_table(index = "dayofweek",
                        columns = "hour",
@@ -142,9 +149,43 @@ plt.tight_layout()
 plt.savefig("../output/heatmap.png", dpi = 150)
 plt.show()
 
+# %% 
+
 by_district = df.groupby("dc_dist").size().sort_values(ascending = False)
 
 fig, ax = plt.subplots(figsize = (12, 6))
-by_district.plot(kind = "bar", ax = ax)
-ax.set_title("Total Incidents by Police District, 2018-2025")
-ax.set_xlabel("Districts")
+ax.bar(by_district.index.astype(str), by_district.values,
+       color = BAR_FILL, edgecolor = BAR_EDGE, linewidth = 1.5)
+
+ax.set_title("Total Incidents by Police District, 2018-2025", **title_style)
+ax.set_xlabel("Districts", **label_style)
+ax.set_ylabel("Number of Incidents", **label_style)
+ax.tick_params(axis = "both", colors = TICK_COLOR)
+
+plt.tight_layout()
+plt.savefig(OUTPUT_DIR/ "by_district.png", dpi = 150)
+plt.show()
+
+# %% 
+first_year = df[df["year"] == 2018].groupby("dc_dist").size()
+last_year = df[df["year"] == 2025].groupby("dc_dist").size()
+pct_change = ((last_year - first_year)/first_year * 100).sort_values()
+print(pct_change)
+
+# %% 
+monthly = df.grouby("month").size()
+fig, ax = plt.subplots(figsize = (10,6))
+ax.bar(monthly.index, monthly.values, 
+       color = BAR_FILL, edgecolr = BAR_EDGE, linewidth = 2)
+
+ax.set_title("Incidents by Month", **title_style)
+ax.set_xlabel("Month", **label_style)
+ax.set_ylabel("Number of Incidents", **label_style)
+ax.tick_params(axis = "both", colors = TICK_COLOR)
+ax.set_xticks(range(1, 13))
+
+plt.tight_layout()
+plt.savefig(OUTPUT_DIR/ "seasonal.png", dpi = 150)
+plt.show()
+
+
