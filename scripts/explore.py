@@ -188,4 +188,41 @@ plt.tight_layout()
 plt.savefig(OUTPUT_DIR/ "seasonal.png", dpi = 150)
 plt.show()
 
+# %% 
+#combining dashboard
+
+fig, axes = plt.subplots(2, 2, figsize = (18, 12))
+
+#top left- yearly trends
+for category in yearly_by_type.columns: 
+    axes[0,0].plot(yearly_by_type.index, yearly_by_type[category],
+                   label = category, **line_style)
+    
+axes[0,0].set_title("Crime by Category Over Time", **title_style)
+axes[0,0].tick_params(axis = "both", colors = TICK_COLOR)
+axes[0,0].legend()
+
+#top right- by district
+axes[0,1].bar(by_district.index.astype(str), by_district.values,
+              color = BAR_FILL, edgecolor = BAR_EDGE, linewidth = 1.5)
+axes[0,1].set_title("Incidents by District", **title_style)
+axes[0,1].tickparams(axis = "both", colors = TICK_COLOR)
+
+#bottom left- seasonal
+axes[1,0].bar(monthly.index, monthly.values,
+              color = BAR_FILL, edgecolor = BAR_EDGE, linewidth = 2)
+axes[1,0].set_title("Seasonal Pattern", **title_style)
+axes[1,0].tick_params(axis = "both", colors = TICK_COLOR)
+
+#bottom right- heatmap
+sns.heatmap(pivot, cmap= "Yl0rRd", ax = axes[1, 1])
+axes[1,1].set_title("Hour x Day Heatmap", **title_style)
+axes[1,1].tick_params(axis = "both", colors = TICK_COLOR)
+
+fig.suptitle("Philadelphia Crime Dashboard (2018-2025)",
+             fontsize = 30, fontweight = "bold", color = "#2d4cfc")
+
+plt.tight_layout()
+plt.savefig(OUTPUT_DIR / "dashboard.png", dpi = 150)
+plt.show()
 
