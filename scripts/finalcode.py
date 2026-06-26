@@ -13,19 +13,19 @@ OUTPUT_DIR = SCRIPT_DIR.parent / "output"
 
 #styles
 title_style = dict(fontsize=16, 
-                   family="Arial", 
+                   family="Helvetica", 
                    fontweight="bold", 
-                   color="#2d4cfc")
+                   color="#0b1c36")
 label_style = dict(fontsize=12, 
-                   family="Arial", 
+                   family="Helvetica", 
                    fontweight="bold", 
-                   color="#2dbefc")
+                   color="#0b1c36")
 line_style  = dict(marker="*", 
                    markersize=12, 
                    linestyle="dotted", 
                    linewidth=2)
 
-BAR_FILL, BAR_EDGE, TICK_COLOR = "#1cd3fc", "#1c5bfc", "#2dbefc"
+BAR_FILL, BAR_EDGE, TICK_COLOR = "#a0cedb", "#a0cedb", "#0b1c36"
 
 def simplify_crime_type(data):
     data = str(data).lower()
@@ -94,9 +94,9 @@ def build_dashboard(df, output_path):
     axes[1,1].tick_params(axis = "both", colors = TICK_COLOR)
 
     fig.suptitle("Philadelphia Crime Dashboard",
-                 fontsize=30, fontweight="bold", color="#2d4cfc")
+                 family = "Helvetica", fontsize = 30, fontweight = "bold", color = "#0b1c36")
     plt.tight_layout()
-    plt.savefig(output_path, dpi=150)
+    plt.savefig(output_path, dpi = 150)
     plt.close(fig)
 
 
